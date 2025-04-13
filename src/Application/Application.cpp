@@ -215,7 +215,7 @@ namespace Bcg {
 
         m_applicationContext.uiManager->shutdown();
 
-        Log::Info( "Application cleanup complete.");
+        Log::Info("Application cleanup complete.");
     }
 
 
@@ -238,6 +238,11 @@ namespace Bcg {
 
     void Application::onLoadModelRequest(const LoadModelEvent &event) {
         // Delegate to the loading function
-        m_applicationContext.sceneManager->loadModel(event.filepath, event.initialPosition, event.initialScale);
+        entt::entity loadedEntity = m_applicationContext.sceneManager->loadModel(event.filepath, event.initialPosition, event.initialScale);
+
+        if (loadedEntity == entt::null) {
+            Log::Error("Model loading failed for '{}', cannot set focus.", event.filepath);
+            return;
+        }
     }
 } // namespace Bcg
