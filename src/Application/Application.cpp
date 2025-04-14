@@ -4,15 +4,15 @@
 
 #include "Application.h"
 #include "Logger.h"
-#include "RendererSystem.h"
 #include "RenderComponents.h"
 #include "IPlugin.h"
 #include "WindowManager.h"
 #include "UIManager.h"
 #include "InputManager.h"
-#include "CameraSystem.h"
 #include "SceneManager.h"
-#include "TransformComponent.h"
+#include "RendererSystem.h"
+#include "CameraSystem.h"
+#include "TransformSystem.h"
 
 #include <iostream> // Needed for Vertex Attribute Descriptions
 
@@ -39,6 +39,7 @@ namespace Bcg {
         context->uiManager = std::make_unique<UIManager>();
         context->rendererSystem = std::make_unique<RendererSystem>();
         context->inputManager = std::make_unique<InputManager>();
+        context->transformSystem = std::make_unique<TransformSystem>();
     }
 
     Application::~Application() {
@@ -55,11 +56,13 @@ namespace Bcg {
         context->rendererSystem->initialize(context); // Renderer performs its specific setup
         context->uiManager->initGLFWBackend(); // Initialize ImGui GLFW backend
         context->inputManager->initialize(context);
+        context->transformSystem->initialize(context);
+
         initECS();
 
         loadPlugins(); // Init plugins after core systems are ready
 
-        m_dispatcher.trigger<LoadModelEvent>({"models/star.obj", {0, 0, 0}, {1, 1, 1}}); // Example load
+        m_dispatcher.trigger<LoadModelEvent>({"models/star.obj"}); // Example load
 
         mainLoop();
 
@@ -102,7 +105,7 @@ namespace Bcg {
         while (!m_applicationContext.windowManager->shouldClose()) {
             auto currentTime = std::chrono::high_resolution_clock::now();
             float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(
-                        currentTime - m_lastFrameTime).
+                    currentTime - m_lastFrameTime).
                     count();
             m_lastFrameTime = currentTime;
 
@@ -204,7 +207,15 @@ namespace Bcg {
 
     void Application::onLoadModelRequest(const LoadModelEvent &event) {
         // Delegate to the loading function
-        entt::entity loadedEntity = m_applicationContext.sceneManager->loadModel(event.filepath, event.initialPosition, event.initialScale);
+        entt::entity loadedEntity = m_applicationContext.sceneManager->loadModel(event.filepath);
+
+        auto &transform = m_registry.emplace<TransformComponent>(loadedEntity);
+        transform.position = event.initialPosition;
+        transform.rotation = event.initialRot;
+        transform.scale = event.initialScale;
+        transform.dirty = true;
+
+
 
         if (loadedEntity == entt::null) {
             Log::Error("Model loading failed for '{}', cannot set focus.", event.filepath);

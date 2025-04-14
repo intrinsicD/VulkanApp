@@ -27,7 +27,7 @@ namespace Bcg {
         transform.dirty = false;
     }
 
-    void TransformSystem::decomposeMatrixSVD(const Eigen::Matrix4f &model_matrix, TransformComponent &transform) {
+    void TransformSystem::setFromMatrix(Bcg::TransformComponent &transform, const Bcg::Matrix4f &model_matrix) {
         // 1. Extract the translation directly from the last column.
         transform.position = model_matrix.block<3, 1>(0, 3);
 
@@ -61,14 +61,14 @@ namespace Bcg {
         transform.dirty = true;
     }
 
-    void TransformSystem::pre_apply(TransformComponent &transform, const Matrix4f &m) {
+    void TransformSystem::preApply(Bcg::TransformComponent &transform, const Bcg::Matrix4f &m) {
         update(transform);
-        decomposeMatrixSVD(transform.cachedModelMatrix * m, transform);
+        setFromMatrix(transform, transform.cachedModelMatrix * m);
     }
 
-    void TransformSystem::post_apply(TransformComponent &transform, const Matrix4f &m) {
+    void TransformSystem::postApply(Bcg::TransformComponent &transform, const Bcg::Matrix4f &m) {
         update(transform);
-        decomposeMatrixSVD(m * transform.cachedModelMatrix, transform);
+        setFromMatrix(transform, m * transform.cachedModelMatrix);
     }
 
     void TransformSystem::translate(TransformComponent &transform, const Translation &delta_translation) {

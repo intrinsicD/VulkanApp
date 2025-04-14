@@ -11,7 +11,7 @@
 namespace Bcg {
     class TransformSystem : public System {
     public:
-        ~TransformSystem() override;
+        ~TransformSystem() override = default;
 
         void initialize(ApplicationContext *context) override;
 
@@ -19,11 +19,11 @@ namespace Bcg {
 
         void update(TransformComponent &transform);
 
-        void decomposeMatrixSVD(const Matrix4f &model_matrix, TransformComponent &transform);
+        void setFromMatrix(TransformComponent &transform, const Matrix4f &model_matrix);
 
-        void pre_apply(TransformComponent &transform, const Matrix4f &m);
+        void preApply(TransformComponent &transform, const Matrix4f &m);
 
-        void post_apply(TransformComponent &transform, const Matrix4f &m);
+        void postApply(TransformComponent &transform, const Matrix4f &m);
 
         void translate(TransformComponent &transform, const Translation &translation);
 

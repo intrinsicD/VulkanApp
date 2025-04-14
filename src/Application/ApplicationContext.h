@@ -9,20 +9,30 @@
 #include <memory>
 
 namespace Bcg{
-    class RendererSystem;
+
+    //Managers
     class WindowManager;
     class UIManager;
     class InputManager;
-    class CameraSystem;
     class SceneManager;
 
+    //Systems
+    class TransformSystem;
+    class CameraSystem;
+    class RendererSystem;
+
     struct ApplicationContext{
-        std::unique_ptr<RendererSystem> rendererSystem;
+        //Managers
         std::unique_ptr<WindowManager> windowManager;
         std::unique_ptr<UIManager> uiManager;
         std::unique_ptr<InputManager> inputManager;
-        std::unique_ptr<CameraSystem> cameraSystem;
         std::unique_ptr<SceneManager> sceneManager;
+
+        //Systems
+        std::unique_ptr<RendererSystem> rendererSystem;
+        std::unique_ptr<CameraSystem> cameraSystem;
+        std::unique_ptr<TransformSystem> transformSystem;
+
         entt::registry* registry;
         entt::dispatcher* dispatcher;
 

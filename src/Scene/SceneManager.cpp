@@ -33,7 +33,7 @@ namespace Bcg {
 
     // --- Scene Operations ---
 
-    entt::entity SceneManager::loadModel(const std::string &filepath, Vector3f position, Vector3f scale) {
+    entt::entity SceneManager::loadModel(const std::string &filepath) {
         if (!context->rendererSystem) {
             Log::Error( "[SceneManager::loadModel] Renderer not set! Cannot load model.");
             return entt::null;
@@ -136,10 +136,6 @@ namespace Bcg {
 
         // --- Create Entity and Components ---
         auto entity = context->registry->create();
-        auto &transform = context->registry->emplace<TransformComponent>(entity);
-        transform.position = position;
-        transform.scale = scale;
-        transform.dirty = true;
 
         // Add mesh component and upload data via Renderer
         context->registry->emplace<VulkanMeshComponent>(entity);

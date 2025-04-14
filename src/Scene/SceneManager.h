@@ -32,9 +32,7 @@ namespace Bcg {
         void shutdown() override;
 
         // --- Scene Operations ---
-        entt::entity loadModel(const std::string &filepath,
-                               Vector3f position = Vector3f::Zero(),
-                               Vector3f scale = Vector3f::Ones());
+        entt::entity loadModel(const std::string &filepath);
 
         void clearScene(); // Destroys all entities and their GPU resources
 

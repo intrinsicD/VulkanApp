@@ -9,7 +9,7 @@
 #include <string>
 #include "MatVec.h"
 
-namespace Bcg{
+namespace Bcg {
     struct WindowResizeEvent {
         int width;
         int height;
@@ -24,6 +24,7 @@ namespace Bcg{
         // Example event
         std::string filepath;
         Vector3f initialPosition = Vector3f::Zero();
+        Rotation initialRot = Rotation::Identity();
         Vector3f initialScale = Vector3f::Ones();
     };
 }
