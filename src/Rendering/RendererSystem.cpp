@@ -249,7 +249,7 @@ namespace Bcg{
                 VK_SHADER_STAGE_VERTEX_BIT,     // Stage(s) accessing the push constants
                 0,                              // Offset within the push constant block
                 sizeof(Matrix4f),              // Size of the data being pushed
-                &transform.modelMatrix                // Pointer to the data (model matrix)
+                &transform.cachedModelMatrix                // Pointer to the data (model matrix)
             );
             // --- End Push Constant ---
 

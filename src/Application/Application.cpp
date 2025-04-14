@@ -24,8 +24,6 @@
 
 
 namespace Bcg {
-    // --- Application Method Implementations ---
-
     Application::Application(int width, int height, const std::string &title) {
         Log::Init();
         Log::setLevel(spdlog::level::debug);
@@ -34,7 +32,8 @@ namespace Bcg {
 
         auto context = getApplicationContext();
         context->windowManager = std::make_unique<WindowManager>(width, height, title);
-        initECS(); // Includes event setup
+        context->registry = &m_registry;
+        context->dispatcher = &m_dispatcher;
         context->sceneManager = std::make_unique<SceneManager>();
         context->cameraSystem = std::make_unique<CameraSystem>();
         context->uiManager = std::make_unique<UIManager>();
@@ -43,8 +42,7 @@ namespace Bcg {
     }
 
     Application::~Application() {
-        // Cleanup happens in reverse order of initialization
-        cleanup();
+
     }
 
     void Application::run() {
@@ -57,58 +55,23 @@ namespace Bcg {
         context->rendererSystem->initialize(context); // Renderer performs its specific setup
         context->uiManager->initGLFWBackend(); // Initialize ImGui GLFW backend
         context->inputManager->initialize(context);
-
-        auto vkContext = context->rendererSystem->getVulkanContext();
-
-        //TODO move to CameraSystem
-        auto camera_id = context->cameraSystem->createCamera();
-        auto &camera = context->registry->get<CameraParametersComponent>(camera_id);
-
-        camera.aspectRatio = context->windowManager->getWidth() / context->windowManager->getHeight();
-        camera.dirtyProjection = true;
-        context->cameraSystem->setCurrentCamera(&camera);
+        initECS();
 
         loadPlugins(); // Init plugins after core systems are ready
 
-        // Trigger initial load event or load default scene
-        //m_dispatcher.trigger<LoadModelEvent>({"models/viking_room.obj", {0, 0, 0}, {1, 1, 1}}); // Example load
         m_dispatcher.trigger<LoadModelEvent>({"models/star.obj", {0, 0, 0}, {1, 1, 1}}); // Example load
 
         mainLoop();
 
-        // --- ImGui Cleanup --- <<<
-        // 1. Ensure GPU is idle before ANY cleanup
-        if (vkContext->device != VK_NULL_HANDLE) {
-            VK_CHECK(vkDeviceWaitIdle(vkContext->device));
-        }
-
-
-        // 3. Call Application's main cleanup, which includes:
-        //    - Plugin shutdown
-        //    - Renderer shutdown
-        //    - ECS resource cleanup
-        //    - VulkanContext cleanup (which calls ImGui_ImplVulkan_Shutdown) <<<< This is key
-        //    - GLFW cleanup
-        cleanup(); // <<< Call the existing cleanup function
+        cleanup();
     }
 
     void Application::initECS() {
         Log::Info("Initializing ECS...");
-        // EnTT registry and dispatcher are already members
 
         // Connect event listeners
         m_dispatcher.sink<WindowResizeEvent>().connect<&Application::onWindowResize>(this);
         m_dispatcher.sink<LoadModelEvent>().connect<&Application::onLoadModelRequest>(this);
-
-        // TODO: Connect more application-level event listeners
-        // m_dispatcher.sink<EntitySelectedEvent>()...
-        m_applicationContext.registry = &m_registry;
-        m_applicationContext.dispatcher = &m_dispatcher;
-    }
-
-    void Application::initInput() {
-        Log::Info("Initializing Input...");
-        m_applicationContext.inputManager = std::make_unique<InputManager>();
     }
 
     void Application::loadPlugins() {
@@ -186,6 +149,10 @@ namespace Bcg {
 
     void Application::cleanup() {
         Log::Info("Cleaning up...");
+        auto vkContext = m_applicationContext.rendererSystem->getVulkanContext();
+        if (vkContext->device != VK_NULL_HANDLE) {
+            VK_CHECK(vkDeviceWaitIdle(vkContext->device));
+        }
         // Shutdown plugins first
         if (!m_plugins.empty()) {
             Log::Info("Shutting down plugins...");

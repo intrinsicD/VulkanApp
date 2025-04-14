@@ -32,6 +32,10 @@ namespace Bcg {
     using Quaternionf = Eigen::Quaternion<float>;
     using Quaterniond = Eigen::Quaternion<double>;
 
+    using Rotation = Eigen::AngleAxisf;
+    using Translation = Vector3f;
+    using Sscaling = Vector3f;
+
     // radians
     template<typename T>
     constexpr T radians(T degrees) {

@@ -3,11 +3,18 @@
 //
 
 #include "CameraSystem.h"
-#include "MatVec.h"
+#include "WindowManager.h"
 
 namespace Bcg {
     void CameraSystem::initialize(ApplicationContext *context) {
         this->context = context;
+
+        auto camera_id = context->cameraSystem->createCamera();
+        auto &camera = context->registry->get<CameraParametersComponent>(camera_id);
+
+        camera.aspectRatio = context->windowManager->getWidth() / context->windowManager->getHeight();
+        camera.dirtyProjection = true;
+        context->cameraSystem->setCurrentCamera(&camera);
     }
 
     void CameraSystem::shutdown() {

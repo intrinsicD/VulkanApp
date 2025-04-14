@@ -52,30 +52,13 @@ namespace Bcg {
         ~Application();
 
         void run();
-
+    private:
         // Accessors needed by other parts
         ApplicationContext *getApplicationContext() {
             return &m_applicationContext;
         }
 
-        entt::registry &getRegistry() { return m_registry; }
-
-        entt::dispatcher &getDispatcher() { return m_dispatcher; }
-
-    private:
         void initECS();
-
-        void initScene();
-
-        void initCamera();
-
-        void initInput();
-
-        void initRenderer();
-
-        void initImGui();
-
-        void initImGuiGLFWBackend();
 
         void loadPlugins(); // Placeholder
 
@@ -92,9 +75,6 @@ namespace Bcg {
 
         entt::registry m_registry;
         entt::dispatcher m_dispatcher;
-
-        // Basic Camera State
-        entt::entity m_cameraFocusEntity = entt::null;
 
         // Plugins
         std::vector<std::unique_ptr<IPlugin> > m_plugins;
