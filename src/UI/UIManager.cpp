@@ -14,6 +14,7 @@
 #include "SceneManager.h"
 #include "Application.h"
 #include "WindowManager.h"
+#include "TransformComponent.h"
 
 namespace Bcg {
     UIManager::~UIManager() {
@@ -125,8 +126,8 @@ namespace Bcg {
 
             if (projChanged) {
                 // Ensure near < far after edits
-                nearP = glm::min(nearP, farP - 0.001f);
-                farP = glm::max(farP, nearP + 0.001f);
+                nearP = std::min(nearP, farP - 0.001f);
+                farP = std::max(farP, nearP + 0.001f);
                 camera->fovYDegrees = fovDeg;
                 camera->aspectRatio = aspect;
                 camera->nearPlane = nearP;
@@ -141,8 +142,8 @@ namespace Bcg {
             // -- View (Orbit Mode Focus) --
             ImGui::SeparatorText("View (Orbit)");
             float distance = camera->distance;
-            glm::vec3 position = camera->position; // Get a copy
-            glm::vec3 targetPos = camera->target; // Get a copy
+            Vector3f position = camera->position; // Get a copy
+            Vector3f targetPos = camera->target; // Get a copy
 
             bool viewChanged = false;
             viewChanged |= ImGui::DragFloat("Distance", &distance, 0.1f, 0.1f, 1000.0f, "%.2f");
@@ -157,8 +158,8 @@ namespace Bcg {
             }
 
             // Display Calculated Camera Position (Read-only)
-            glm::vec3 camPos = camera->position; // Force update if needed
-            ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camPos.x, camPos.y, camPos.z);
+            Vector3f camPos = camera->position; // Force update if needed
+            ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camPos.x(), camPos.y(), camPos.z());
 
             // Display View Matrix (Read-only, potentially long)
             // const glm::mat4 viewMat = cameraSystem->getViewMatrix(); // Force update if needed

@@ -18,6 +18,7 @@
 #include "Components.h" // Assuming components like TransformComponent are here
 #include "VulkanContext.h" // For VulkanMeshComponent
 #include "Application.h" // Potentially needed to get CameraSystem, or use events
+#include "TransformComponent.h" // Potentially needed to get CameraSystem, or use events
 
 namespace Bcg {
     void SceneManager::initialize(ApplicationContext *context) {
@@ -32,7 +33,7 @@ namespace Bcg {
 
     // --- Scene Operations ---
 
-    entt::entity SceneManager::loadModel(const std::string &filepath, glm::vec3 position, glm::vec3 scale) {
+    entt::entity SceneManager::loadModel(const std::string &filepath, Vector3f position, Vector3f scale) {
         if (!context->rendererSystem) {
             Log::Error( "[SceneManager::loadModel] Renderer not set! Cannot load model.");
             return entt::null;
@@ -59,8 +60,8 @@ namespace Bcg {
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-        glm::vec3 modelMinLocal(std::numeric_limits<float>::max());
-        glm::vec3 modelMaxLocal(std::numeric_limits<float>::lowest());
+        Vector3f modelMinLocal = Vector3f::Constant(std::numeric_limits<float>::max());
+        Vector3f modelMaxLocal = Vector3f::Constant(std::numeric_limits<float>::lowest());
         bool hasVertices = false;
 
         for (const auto &shape: shapes) {
@@ -74,8 +75,8 @@ namespace Bcg {
                     attrib.vertices[vertIdxBase + 1],
                     attrib.vertices[vertIdxBase + 2]
                 };
-                modelMinLocal = glm::min(modelMinLocal, vertex.pos);
-                modelMaxLocal = glm::max(modelMaxLocal, vertex.pos);
+                modelMinLocal = modelMinLocal.cwiseMin(vertex.pos);
+                modelMaxLocal = modelMaxLocal.cwiseMax(vertex.pos);
                 hasVertices = true;
 
                 // Normals
@@ -138,7 +139,7 @@ namespace Bcg {
         auto &transform = context->registry->emplace<TransformComponent>(entity);
         transform.position = position;
         transform.scale = scale;
-        transform.updateModelMatrix();
+        transform.dirty = true;
 
         // Add mesh component and upload data via Renderer
         context->registry->emplace<VulkanMeshComponent>(entity);
@@ -155,7 +156,7 @@ namespace Bcg {
         // if (m_cameraSystem) { // Requires m_cameraSystem pointer
         //      if (!m_registry.view<CameraFocusTarget>().size()) { // Check if no focus target yet
         //           m_registry.emplace<CameraFocusTarget>(entity);
-        //           glm::vec3 worldMin, worldMax;
+        //           Vector3f worldMin, worldMax;
         //           if (calculateWorldBounds(entity, worldMin, worldMax)) {
         //                m_cameraSystem->frameBoundingBox(worldMin, worldMax);
         //                m_cameraSystem->setTarget(transform.position); // Center on object origin initially
@@ -192,7 +193,7 @@ namespace Bcg {
 
 
     // Helper to calculate world bounds (needed for framing)
-    bool SceneManager::calculateWorldBounds(entt::entity entity, glm::vec3 &outMin, glm::vec3 &outMax) {
+    bool SceneManager::calculateWorldBounds(entt::entity entity, Vector3f &outMin, Vector3f &outMax) {
         auto *transform = context->registry->try_get<TransformComponent>(entity);
         // We'd need the local bounds, maybe from a MeshBoundsComponent:
         // auto* bounds = m_registry.try_get<MeshBoundsComponent>(entity);
@@ -201,26 +202,26 @@ namespace Bcg {
         // Placeholder: Needs local bounds to be stored/accessed
         // For now, just use the transform position as a proxy (INACCURATE!)
         if (!transform) return false;
-        outMin = transform->position - glm::vec3(0.5f * transform->scale); // Rough guess
-        outMax = transform->position + glm::vec3(0.5f * transform->scale); // Rough guess
+        outMin = transform->position - Vector3f(0.5f * transform->scale); // Rough guess
+        outMax = transform->position + Vector3f(0.5f * transform->scale); // Rough guess
         return true;
 
 
         /* // Correct implementation using stored local bounds:
         if (!transform || !bounds) return false;
 
-        glm::vec3 localCorners[8];
-        localCorners[0] = glm::vec3(bounds->localMin.x, bounds->localMin.y, bounds->localMin.z);
+        Vector3f localCorners[8];
+        localCorners[0] = Vector3f(bounds->localMin.x, bounds->localMin.y, bounds->localMin.z);
         // ... calculate other 7 corners ...
-        localCorners[7] = glm::vec3(bounds->localMax.x, bounds->localMax.y, bounds->localMax.z);
+        localCorners[7] = Vector3f(bounds->localMax.x, bounds->localMax.y, bounds->localMax.z);
 
-        outMin = glm::vec3(std::numeric_limits<float>::max());
-        outMax = glm::vec3(std::numeric_limits<float>::lowest());
+        outMin = Vector3f(std::numeric_limits<float>::max());
+        outMax = Vector3f(std::numeric_limits<float>::lowest());
 
         for (int i = 0; i < 8; ++i) {
             glm::vec4 transformedCorner = transform->model * glm::vec4(localCorners[i], 1.0f);
-            outMin = glm::min(outMin, glm::vec3(transformedCorner));
-            outMax = glm::max(outMax, glm::vec3(transformedCorner));
+            outMin = glm::min(outMin, Vector3f(transformedCorner));
+            outMax = glm::max(outMax, Vector3f(transformedCorner));
         }
         return true;
         */

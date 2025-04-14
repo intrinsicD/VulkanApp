@@ -893,7 +893,7 @@ namespace Bcg {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Accessible in vertex shader
         pushConstantRange.offset = 0; // Start at offset 0
-        pushConstantRange.size = sizeof(glm::mat4); // Size of the model matrix
+        pushConstantRange.size = sizeof(Matrix4f); // Size of the model matrix
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

@@ -5,16 +5,16 @@
 #ifndef CAMERACOMPONENT_H
 #define CAMERACOMPONENT_H
 
-#include <glm/glm.hpp>
+#include "MatVec.h"
 
 namespace Bcg{
     struct CameraParametersComponent{
-        glm::mat4 viewMatrix;
-        glm::mat4 projectionMatrix;
+        Matrix4f viewMatrix = Matrix4f::Identity();
+        Matrix4f projectionMatrix = Matrix4f::Identity();
 
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 5.0f);
-        glm::vec3 target = glm::vec3(0.0f);
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        Vector3f position = Vector3f(0.0f, 0.0f, 5.0f);
+        Vector3f target = Vector3f::Zero();
+        Vector3f up = Vector3f(0.0f, 1.0f, 0.0f);
 
         float fovYDegrees = 45.0f;
         float aspectRatio = 1.0f;
@@ -27,6 +27,30 @@ namespace Bcg{
         bool dirtyProjection;
         bool dirtyView;
     };
+
+    inline void Perspective(Matrix4f &proj, float fovYDegrees, float aspectRatio, float nearPlane, float farPlane) {
+        float tanHalfFovY = std::tan(radians(fovYDegrees) * 0.5f);
+        proj = Eigen::Matrix4f::Zero();
+        proj(0, 0) = 1.0f / (aspectRatio * tanHalfFovY);
+        proj(1, 1) = 1.0f / tanHalfFovY; //DO i need to flip this in vulkan?
+        proj(2, 2) = -(farPlane + nearPlane) / (farPlane - nearPlane);
+        proj(2, 3) = -(2.0f * farPlane * nearPlane) / (farPlane - nearPlane);
+        proj(3, 2) = -1.0f;
+    }
+
+    inline void LookAt(Matrix4f &view, const Vector3f &position, const Vector3f &target, const Vector3f &up) {
+        Eigen::Vector3f forward = (target - position).normalized();
+        Eigen::Vector3f right = forward.cross(up).normalized();
+        Eigen::Vector3f up_ = right.cross(forward);
+
+        view = Eigen::Matrix4f::Identity();
+        view.block<1, 3>(0, 0) = right.transpose();
+        view.block<1, 3>(1, 0) = up.transpose();
+        view.block<1, 3>(2, 0) = -forward.transpose();
+        view(0, 3) = -right.dot(position);
+        view(1, 3) = -up.dot(position);
+        view(2, 3) = forward.dot(position);
+    }
 }
 
 #endif //CAMERACOMPONENT_H

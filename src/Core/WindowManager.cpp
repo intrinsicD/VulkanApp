@@ -86,6 +86,13 @@ namespace Bcg {
         glfwSetCharCallback(m_window, charCallback); // Needed for ImGui text
     }
 
+    void WindowManager::setWindowSize(int width, int height) {
+        m_width = width;
+        m_height = height;
+        glfwSetWindowSize(m_window, width, height);
+    }
+
+
     // --- Static Callback Implementations ---
     // These functions retrieve the Application pointer and forward the event
 

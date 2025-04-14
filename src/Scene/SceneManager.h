@@ -7,15 +7,15 @@
 
 #include <string>
 #include <entt/entt.hpp> // Include EnTT registry
-#include <glm/glm.hpp>
+#include "MatVec.h"
 
 #include "Manager.h"
 
-namespace Bcg{
+namespace Bcg {
     class RendererSystem; // Needs Renderer to upload mesh data
     struct LoadModelEvent; // If handling the event directly
 
-    class SceneManager : public Manager{
+    class SceneManager : public Manager {
     public:
         // Constructor can optionally take initial registry/renderer references
         SceneManager() = default; // Recommended: Pass registry by reference
@@ -23,17 +23,18 @@ namespace Bcg{
         ~SceneManager() override = default; // Might handle scene cleanup if needed
 
         // Prevent copying
-        SceneManager(const SceneManager&) = delete;
-        SceneManager& operator=(const SceneManager&) = delete;
+        SceneManager(const SceneManager &) = delete;
+
+        SceneManager &operator=(const SceneManager &) = delete;
 
         void initialize(ApplicationContext *context) override;
 
         void shutdown() override;
 
         // --- Scene Operations ---
-        entt::entity loadModel(const std::string& filepath,
-                               glm::vec3 position = glm::vec3(0.0f),
-                               glm::vec3 scale = glm::vec3(1.0f));
+        entt::entity loadModel(const std::string &filepath,
+                               Vector3f position = Vector3f::Zero(),
+                               Vector3f scale = Vector3f::Ones());
 
         void clearScene(); // Destroys all entities and their GPU resources
 
@@ -49,7 +50,7 @@ namespace Bcg{
     private:
         friend class Application;
 
-        bool calculateWorldBounds(entt::entity entity, glm::vec3& outMin, glm::vec3& outMax);
+        bool calculateWorldBounds(entt::entity entity, Vector3f &outMin, Vector3f &outMax);
     };
 }
 

@@ -7,7 +7,7 @@
 
 #include <entt/entity/fwd.hpp>
 #include <string>
-#include <glm/glm.hpp>
+#include "MatVec.h"
 
 namespace Bcg{
     struct WindowResizeEvent {
@@ -23,8 +23,8 @@ namespace Bcg{
     struct LoadModelEvent {
         // Example event
         std::string filepath;
-        glm::vec3 initialPosition{0.0f};
-        glm::vec3 initialScale{1.0f};
+        Vector3f initialPosition = Vector3f::Zero();
+        Vector3f initialScale = Vector3f::Ones();
     };
 }
 

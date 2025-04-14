@@ -3,12 +3,7 @@
 //
 
 #include "CameraSystem.h"
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // Vulkan depth range is [0, 1]
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/string_cast.hpp> // For debugging if needed
+#include "MatVec.h"
 
 namespace Bcg {
     void CameraSystem::initialize(ApplicationContext *context) {
@@ -36,7 +31,9 @@ namespace Bcg {
         if (!context->registry->valid(entity)) {
             return nullptr;
         }
-        return &context->registry->emplace_or_replace<CameraParametersComponent>(entity, std::forward<CameraParametersComponent>(camera));
+        return &context->registry->emplace_or_replace<CameraParametersComponent>(entity,
+                                                                                 std::forward<CameraParametersComponent>(
+                                                                                         camera));
     }
 
     void CameraSystem::destroyCamera(entt::entity entity) {
@@ -63,21 +60,19 @@ namespace Bcg {
 
     void CameraSystem::update(CameraParametersComponent &camera) const {
         if (camera.dirtyView) {
-            camera.viewMatrix = glm::lookAt(camera.position, camera.target, camera.up);
+            LookAt(camera.viewMatrix, camera.position, camera.target, camera.up);
             camera.dirtyView = false;
         }
 
         if (camera.dirtyProjection) {
-            camera.projectionMatrix = glm::perspective(glm::radians(camera.fovYDegrees),
-                                                       camera.aspectRatio,
-                                                       camera.nearPlane,
-                                                       camera.farPlane);
+            Perspective(camera.projectionMatrix, camera.fovYDegrees, camera.aspectRatio, camera.nearPlane,
+                        camera.farPlane);
             camera.dirtyProjection = false;
         }
     }
 
     void CameraSystem::setDistance(CameraParametersComponent &camera, float distance) {
-        glm::vec3 backwards = glm::normalize(camera.position - camera.target);
+        Vector3f backwards = (camera.position - camera.target).normalized();
         camera.position = camera.target + distance * backwards;
         camera.distance = distance;
         camera.dirtyView = true;

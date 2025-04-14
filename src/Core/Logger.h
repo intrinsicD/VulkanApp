@@ -15,6 +15,10 @@ namespace Bcg {
     public:
         static void Init(); // Call once at startup
 
+        static void setLevel(spdlog::level::level_enum level) {
+            s_Logger->set_level(level);
+        }
+
         // Template functions for different levels
         template<typename... Args>
         static void Trace(spdlog::format_string_t<Args...> fmt, Args &&... args) {

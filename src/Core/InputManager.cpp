@@ -2,13 +2,12 @@
 // Created by alex on 4/9/25.
 //
 
+#include <GLFW/glfw3.h>
+
 #include "InputManager.h"
-
-#include <CameraSystem.h>
-
+#include "CameraSystem.h"
 #include "Application.h"
 #include "WindowManager.h"
-#include <GLFW/glfw3.h>
 
 namespace Bcg {
     InputManager::InputManager() : Manager() {
@@ -35,11 +34,11 @@ namespace Bcg {
 
         // Calculate forward and right directions in the XZ plane based on yaw
         // Forward vector (along camera's look direction projected onto XZ)
-        glm::vec3 forwardDirXZ = glm::normalize(camera->target - camera->position);
+        Vector3f forwardDirXZ = (camera->target - camera->position).normalized();
         // Right vector (perpendicular to forward in XZ plane)
-        glm::vec3 rightDirXZ = glm::normalize(glm::cross(forwardDirXZ, camera->up));
+        Vector3f rightDirXZ = (forwardDirXZ.cross(camera->up)).normalized();
 
-        glm::vec3 moveDirection(0.0f); // Accumulate movement
+        Vector3f moveDirection = Vector3f::Zero(); // Accumulate movement
 
         // Check WASD keys
         auto h_window = context->windowManager->getGLFWHandle();
@@ -63,9 +62,9 @@ namespace Bcg {
         // If any movement key was pressed, update the target position
         if (moved) {
             // Normalize the combined direction if moving diagonally
-            if (glm::length(moveDirection) > 0.1f) {
+            if (moveDirection.norm() > 0.1f) {
                 // Avoid normalizing zero vector
-                moveDirection = glm::normalize(moveDirection);
+                moveDirection = moveDirection.normalized();
             }
 
             camera->position += moveDirection * deltaTime * camera->movementSpeed;
@@ -123,8 +122,8 @@ namespace Bcg {
 
     void InputManager::handleCursorPos(double xpos, double ypos) {
         if (m_inputState.m_mouseDragging) {
-            glm::dvec2 currentMousePos = {xpos, ypos};
-            glm::dvec2 delta = currentMousePos - m_inputState.m_lastMousePos;
+            Vector2f currentMousePos = Vector2f(xpos, ypos);
+            Vector2f delta = currentMousePos - m_inputState.m_lastMousePos;
             m_inputState.m_lastMousePos = currentMousePos;
 
             float rotSensitivity = 0.005f;
@@ -132,37 +131,37 @@ namespace Bcg {
             if (!camera) return; // Safety check
 
             // Calculate rotation angles (in radians)
-            float angle_x = static_cast<float>(delta.x) * rotSensitivity;
-            float angle_y = static_cast<float>(delta.y) * rotSensitivity;
+            float angle_x = delta.x() * rotSensitivity;
+            float angle_y = delta.y() * rotSensitivity;
 
             // Compute vector from target to current camera position
-            glm::vec3 v = camera->position - camera->target;
-            glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+            Vector3f v = camera->position - camera->target;
+            Vector3f worldUp = Vector3f(0.0f, 1.0f, 0.0f);
 
             // --- Horizontal Rotation ---
             // Rotate around the world up (Y) axis.
-            glm::mat4 horiz_rot = glm::rotate(glm::mat4(1.0f), angle_x, worldUp);
-            v = glm::vec3(horiz_rot * glm::vec4(v, 1.0f));
+            Eigen::AngleAxisf horiz_rot(angle_x, worldUp);
+            v = horiz_rot * v;
             // Also rotate the current up vector
-            glm::vec3 new_up = glm::vec3(horiz_rot * glm::vec4(camera->up, 0.0f));
+            Vector3f new_up = horiz_rot * camera->up;
 
             // --- Compute the Right Axis for Vertical Rotation ---
             // First, compute forward direction from camera toward the target.
             // Since v = camera->position - camera->target, the forward vector is -v (normalized).
-            glm::vec3 forward = glm::normalize(-v);
+            Vector3f forward = (-v).normalized();
             // Compute right vector using the conventional lookAt ordering:
             // right = normalize(cross(forward, new_up));
-            glm::vec3 right = glm::normalize(glm::cross(forward, new_up));
+            Vector3f right = forward.cross(new_up).normalized();
 
             // --- Vertical Rotation ---
             // Rotate v and new_up about the right axis.
-            glm::mat4 vert_rot = glm::rotate(glm::mat4(1.0f), angle_y, right);
-            v = glm::vec3(vert_rot * glm::vec4(v, 1.0f));
-            new_up = glm::vec3(vert_rot * glm::vec4(new_up, 0.0f));
+            Eigen::AngleAxisf vert_rot(angle_y, right);
+            v = vert_rot * v;
+            new_up = vert_rot * new_up;
 
             // Update camera parameters
             camera->position = camera->target + v;
-            camera->up = glm::normalize(new_up);
+            camera->up = new_up.normalized();
 
             // Mark the view matrix as needing update (if applicable).
             camera->dirtyView = true;
@@ -175,7 +174,7 @@ namespace Bcg {
         if (!camera) return; // Safety check
         // Adjust the camera distance based on scroll input
         auto backward = camera->position - camera->target;
-        auto len = glm::length(backward);
+        auto len = backward.norm();
         if (len < 0.1f) {
             // Prevent zooming in too close
             return;

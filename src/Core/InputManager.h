@@ -5,13 +5,13 @@
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 
-#include <glm/glm.hpp>
 #include "Manager.h"
+#include "MatVec.h"
 
 namespace Bcg {
     struct InputState {
         bool m_mouseDragging = false;
-        glm::dvec2 m_lastMousePos{0.0};
+        Vector2f m_lastMousePos = Vector2f::Zero();
     };
 
     class InputManager : public Manager{

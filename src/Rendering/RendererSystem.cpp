@@ -13,6 +13,7 @@
 #include "RenderComponents.h"
 #include "ShaderData.h"
 #include "UIManager.h"
+#include "TransformComponent.h"
 #include "entt/entity/registry.hpp"
 
 
@@ -247,8 +248,8 @@ namespace Bcg{
                 m_vkContext->pipelineLayout,    // Pipeline layout that defines the push constant range
                 VK_SHADER_STAGE_VERTEX_BIT,     // Stage(s) accessing the push constants
                 0,                              // Offset within the push constant block
-                sizeof(glm::mat4),              // Size of the data being pushed
-                &transform.model                // Pointer to the data (model matrix)
+                sizeof(Matrix4f),              // Size of the data being pushed
+                &transform.modelMatrix                // Pointer to the data (model matrix)
             );
             // --- End Push Constant ---
 
@@ -339,8 +340,9 @@ namespace Bcg{
         ubo.proj = camera->projectionMatrix;
 
         // Calculate camera position from view matrix (inverse)
-        glm::mat4 invView = glm::inverse(view);
-        ubo.cameraPos = glm::vec4(camera->position, 1.0f);
+        Matrix4f invView = view.inverse();
+        ubo.cameraPos.head<3>() = camera->position;
+        ubo.cameraPos[3] = 1.0f; // Homogeneous coordinate
 
         // TODO: Update light direction or other global params if needed
 

@@ -5,28 +5,24 @@
 #ifndef SHADERDATA_H
 #define SHADERDATA_H
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // Vulkan depth range is [0, 1]
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtx/hash.hpp>
 #include <vulkan/vulkan.h>
+#include "MatVec.h"
 
 namespace Bcg{
     // Structure for Global Uniform Buffer Object
     struct GlobalUBO {
-        glm::mat4 view;
-        glm::mat4 proj;
+        Matrix4f view;
+        Matrix4f proj;
         // Add light direction, camera position etc. if needed
-        glm::vec4 lightDir{0.5f, -1.0f, 0.3f, 0.0f}; // w=0 for directional
-        glm::vec4 cameraPos;
+        Vector4f lightDir = Vector4f(0.5f, -1.0f, 0.3f, 0.0f); // w=0 for directional
+        Vector4f cameraPos;
     };
 
     struct Vertex {
-        glm::vec3 pos;
-        glm::vec3 normal;
-        glm::vec2 texCoord;
-        glm::vec3 color; // Optional: can be derived or default
+        Vector3f pos;
+        Vector3f normal;
+        Vector2f texCoord;
+        Vector3f color; // Optional: can be derived or default
 
         static VkVertexInputBindingDescription getBindingDescription();
 
@@ -36,18 +32,38 @@ namespace Bcg{
             return pos == other.pos && normal == other.normal && texCoord == other.texCoord && color == other.color;
         }
     };
-
-
-}
+}// namespace Bcg
 
 namespace std {
     template<>
+    struct hash<Bcg::Vector3f> {
+        size_t operator()(const Bcg::Vector3f &vec) const noexcept {
+            size_t seed = 0;
+            for (int i = 0; i < vec.size(); ++i) {
+                seed ^= std::hash<float>()(vec[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    template<>
+    struct hash<Bcg::Vector2f> {
+        size_t operator()(const Bcg::Vector2f &vec) const noexcept {
+            size_t seed = 0;
+            for (int i = 0; i < vec.size(); ++i) {
+                seed ^= std::hash<float>()(vec[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    template<>
     struct hash<Bcg::Vertex> {
         size_t operator()(Bcg::Vertex const &vertex) const noexcept {
-            size_t h1 = hash<glm::vec3>()(vertex.pos);
-            size_t h2 = hash<glm::vec3>()(vertex.normal);
-            size_t h3 = hash<glm::vec2>()(vertex.texCoord);
-            size_t h4 = hash<glm::vec3>()(vertex.color);
+            size_t h1 = hash<Bcg::Vector3f>()(vertex.pos);
+            size_t h2 = hash<Bcg::Vector3f>()(vertex.normal);
+            size_t h3 = hash<Bcg::Vector2f>()(vertex.texCoord);
+            size_t h4 = hash<Bcg::Vector3f>()(vertex.color);
             // Combine hashes (boost::hash_combine style)
             size_t seed = 0;
             seed ^= h1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);

@@ -5,15 +5,15 @@
 #ifndef TRANSFORMCOMPONENT_H
 #define TRANSFORMCOMPONENT_H
 
-#include <glm/glm.hpp>
+#include "MatVec.h"
 
-namespace Bcg{
-    struct TransformComponent{
-      glm::vec3 position = glm::vec3(0.0f);
-      glm::vec3 rotation = glm::vec3(0.0f);
-      glm::vec3 scale = glm::vec3(1.0f);
-      glm::mat4 modelMatrix =glm::mat4(1.0f);
-      bool dirty = true;
+namespace Bcg {
+    struct TransformComponent {
+        Vector3f position = Vector3f::Zero();
+        Vector3f rotation = Vector3f::Zero();
+        Vector3f scale = Vector3f::Zero();
+        Matrix4f modelMatrix = Matrix4f::Identity();
+        bool dirty = true;
     };
 }
 

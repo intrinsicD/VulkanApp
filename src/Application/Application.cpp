@@ -12,15 +12,9 @@
 #include "InputManager.h"
 #include "CameraSystem.h"
 #include "SceneManager.h"
+#include "TransformComponent.h"
 
-#include <imgui_internal.h>
 #include <iostream> // Needed for Vertex Attribute Descriptions
-#include <RendererSystem.h>
-
-#include <glm/gtx/string_cast.hpp>
-
-#include <GLFW/glfw3.h>
-
 
 // Link Slang library
 // #pragma comment(lib, "slang.lib") // Example for MSVC
@@ -32,9 +26,20 @@
 namespace Bcg {
     // --- Application Method Implementations ---
 
-    Application::Application() {
+    Application::Application(int width, int height, const std::string &title) {
         Log::Init();
+        Log::setLevel(spdlog::level::debug);
+
         m_lastFrameTime = std::chrono::high_resolution_clock::now();
+
+        auto context = getApplicationContext();
+        context->windowManager = std::make_unique<WindowManager>(width, height, title);
+        initECS(); // Includes event setup
+        context->sceneManager = std::make_unique<SceneManager>();
+        context->cameraSystem = std::make_unique<CameraSystem>();
+        context->uiManager = std::make_unique<UIManager>();
+        context->rendererSystem = std::make_unique<RendererSystem>();
+        context->inputManager = std::make_unique<InputManager>();
     }
 
     Application::~Application() {
@@ -44,13 +49,6 @@ namespace Bcg {
 
     void Application::run() {
         auto context = getApplicationContext();
-        context->windowManager = std::make_unique<WindowManager>(m_width, m_height, "Vulkan EnTT App");
-        initECS(); // Includes event setup
-        context->sceneManager = std::make_unique<SceneManager>();
-        context->cameraSystem = std::make_unique<CameraSystem>();
-        context->uiManager = std::make_unique<UIManager>();
-        context->rendererSystem = std::make_unique<RendererSystem>();
-        context->inputManager = std::make_unique<InputManager>();
 
         context->windowManager->initialize(context);
         context->sceneManager->initialize(context);
@@ -65,7 +63,8 @@ namespace Bcg {
         //TODO move to CameraSystem
         auto camera_id = context->cameraSystem->createCamera();
         auto &camera = context->registry->get<CameraParametersComponent>(camera_id);
-        camera.aspectRatio = m_width / m_height;
+
+        camera.aspectRatio = context->windowManager->getWidth() / context->windowManager->getHeight();
         camera.dirtyProjection = true;
         context->cameraSystem->setCurrentCamera(&camera);
 
@@ -223,14 +222,14 @@ namespace Bcg {
 
     void Application::onWindowResize(const WindowResizeEvent &event) {
         // Set flag for Vulkan context to handle swapchain recreation
-        m_framebufferResized = true;
-        m_width = event.width;
-        m_height = event.height;
+        m_applicationContext.windowManager->m_framebufferResized = true;
+        // Update window dimensions
+        m_applicationContext.windowManager->setWindowSize(event.width, event.height);
 
         // Update camera aspect ratio if dimensions are valid
         if (event.width > 0 && event.height > 0) {
             auto camera = m_applicationContext.cameraSystem->getCurrentCamera();
-            camera->aspectRatio = (float) m_width / (float) m_height;
+            camera->aspectRatio = (float) event.width / (float) event.height;
             camera->dirtyProjection = true;
             std::cout << "Window resized: " << event.width << "x" << event.height << std::endl;
         }
