@@ -569,16 +569,16 @@ namespace Bcg {
 
     void VulkanContext::cleanupImGui() {
         if (imguiDescriptorPool != VK_NULL_HANDLE) {
-            Log::Info("Shutting down ImGui Vulkan backend...");
+            Log::Info("[VulkanContext::cleanupImGui] Shutting down ImGui Vulkan backend...");
             // Destroy font texture manually if needed (ImGui shutdown might not)
             // fontTexture.destroy(device); // If ImGui_ImplVulkan_Shutdown doesn't do it. Usually it does.
 
             ImGui_ImplVulkan_Shutdown(); // Shutdown Vulkan backend
-            Log::Info("  ImGui_ImplVulkan_Shutdown called.");
+            Log::Info("[VulkanContext::cleanupImGui] ImGui_ImplVulkan_Shutdown called.");
 
             vkDestroyDescriptorPool(device, imguiDescriptorPool, nullptr); // Destroy ImGui pool
             imguiDescriptorPool = VK_NULL_HANDLE;
-            Log::Info("  ImGui Descriptor Pool destroyed.");
+            Log::Info("[VulkanContext::cleanupImGui] ImGui Descriptor Pool destroyed.");
         }
     }
 
@@ -634,7 +634,7 @@ namespace Bcg {
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
 
-        Log::Info("Vulkan Swapchain created ({} images).", imageCount);
+        Log::Info("[VulkanContext::createSwapChain] Vulkan Swapchain created ({} images).", imageCount);
     }
 
     void VulkanContext::createImageViews() {
@@ -643,7 +643,7 @@ namespace Bcg {
             swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat,
                                                      VK_IMAGE_ASPECT_COLOR_BIT);
         }
-        Log::Info("Swapchain Image Views created.");
+        Log::Info("[VulkanContext::createImageViews] Swapchain Image Views created.");
     }
 
 
@@ -711,7 +711,7 @@ namespace Bcg {
         renderPassInfo.pDependencies = &dependency;
 
         VK_CHECK(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
-        Log::Info("Default Render Pass created.");
+        Log::Info("[VulkanContext::createRenderPass] Default Render Pass created.");
     }
 
     void VulkanContext::createDescriptorSetLayout() {
@@ -734,7 +734,7 @@ namespace Bcg {
         layoutInfo.pBindings = bindings.data();
 
         VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &globalSetLayout));
-        Log::Info("Global Descriptor Set Layout created.");
+        Log::Info("[VulkanContext::createDescriptorSetLayout] Global Descriptor Set Layout created.");
 
         // TODO: Create descriptor set layouts for per-material or per-object data if needed
     }
@@ -927,7 +927,7 @@ namespace Bcg {
         pipelineInfo.basePipelineIndex = -1; // Optional
 
         VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline));
-        Log::Info("Default Graphics Pipeline created.");
+        Log::Info("[VulkanContext::createGraphicsPipeline] Default Graphics Pipeline created.");
 
         // --- Cleanup Shader Modules ---
         // No longer needed after pipeline creation
@@ -944,7 +944,7 @@ namespace Bcg {
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
         VK_CHECK(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool));
-        Log::Info("Graphics Command Pool created.");
+        Log::Info("[VulkanContext::createCommandPools] Graphics Command Pool created.");
 
         // Optional: Separate pool for transfer operations if using a dedicated transfer queue
         // This can improve performance by allowing concurrent transfer and graphics work.
@@ -970,7 +970,7 @@ namespace Bcg {
 
         // Transition layout (optional here, can be done in render pass or single command)
         // transitionImageLayout(depthImage.image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        Log::Info("Depth Resources created.");
+        Log::Info("[VulkanContext::createDepthResources] Depth Resources created.");
     }
 
     void VulkanContext::createFramebuffers() {
@@ -993,7 +993,7 @@ namespace Bcg {
 
             VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]));
         }
-        Log::Info("Swapchain Framebuffers created.");
+        Log::Info("[VulkanContext::createFramebuffers] Swapchain Framebuffers created.");
     }
 
 
@@ -1011,7 +1011,7 @@ namespace Bcg {
             VK_CHECK(vkMapMemory(device, uniformBuffers[i].memory, 0, bufferSize, 0, &uniformBuffers[i].mappedData))
             ;
         }
-        Log::Info("Uniform Buffers created and mapped.");
+        Log::Info("[VulkanContext::createUniformBuffers] Uniform Buffers created and mapped.");
     }
 
     void VulkanContext::createDescriptorPool() {
@@ -1029,7 +1029,7 @@ namespace Bcg {
         poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); // Max number of sets to allocate
 
         VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
-        Log::Info("Descriptor Pool created.");
+        Log::Info("[VulkanContext::createDescriptorPool] Descriptor Pool created.");
     }
 
     void VulkanContext::createDescriptorSets() {
@@ -1073,7 +1073,7 @@ namespace Bcg {
                                    0,
                                    nullptr);
         }
-        Log::Info("Global Descriptor Sets allocated and configured.");
+        Log::Info("[VulkanContext::createDescriptorSets] Global Descriptor Sets allocated and configured.");
     }
 
     void VulkanContext::createSyncObjects() {
@@ -1101,7 +1101,7 @@ namespace Bcg {
             VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]));
             VK_CHECK(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]));
         }
-        Log::Info("Synchronization objects (Semaphores, Fences) created.");
+        Log::Info("[VulkanContext::createSyncObjects] Synchronization objects (Semaphores, Fences) created.");
     }
 
     // --- VulkanContext Helper Implementations (Continued) ---
@@ -1553,7 +1553,7 @@ namespace Bcg {
     // --- Slang Shader Compilation ---
     VkShaderModule VulkanContext::compileSlangShader(const std::string &shaderPath, SlangStage stage) {
         if (!slangSession) {
-            Log::Error("ERROR: Slang session not initialized!");
+            Log::Error("[VulkanContext::compileSlangShader] Slang session not initialized!");
             return VK_NULL_HANDLE;
         }
 
@@ -1561,7 +1561,7 @@ namespace Bcg {
         slang::ICompileRequest *request = nullptr;
         result = slangSession->createCompileRequest(&request);
         if (SLANG_FAILED(result) || !request) {
-            Log::Error("[]VulkanContext::compileSlangShader] Failed to create Slang compile request for {}",
+            Log::Error("[VulkanContext::compileSlangShader] Failed to create Slang compile request for {}",
                        shaderPath);
             return VK_NULL_HANDLE;
         }
@@ -1575,9 +1575,9 @@ namespace Bcg {
         // Adjust as needed
         int entryPointIndex = request->addEntryPoint(translationUnitIndex, entryPointName, stage);
         if (entryPointIndex < 0) {
-            Log::Error("[VulkanContext::compileSlangShader]: Could not find entry point '({})' in {}", entryPointName,
+            Log::Error("[VulkanContext::compileSlangShader] Could not find entry point '({})' in {}", entryPointName,
                        shaderPath);
-            Log::Error("[VulkanContext::compileSlangShader]: Diagnostics \n{}", request->getDiagnosticOutput());
+            Log::Error("[VulkanContext::compileSlangShader] Diagnostics \n{}", request->getDiagnosticOutput());
             request->release();
             return VK_NULL_HANDLE;
         }
@@ -1611,7 +1611,7 @@ namespace Bcg {
         size_t dataSize = 0;
         void const *data = request->getEntryPointCode(entryPointIndex, &dataSize);
         if (!data || dataSize == 0) {
-            Log::Error("[VulkanContext::compileSlangShader]: Slang failed to produce SPIR-V code for {},   ({})",
+            Log::Error("[VulkanContext::compileSlangShader] Slang failed to produce SPIR-V code for {},   ({})",
                        shaderPath, entryPointName);
             request->release();
             return VK_NULL_HANDLE;
@@ -1683,7 +1683,7 @@ namespace Bcg {
                 }
             }
             if (!layerFound) {
-                Log::Error("Validation layer not found: {}", layerName);
+                Log::Error("[VulkanContext::checkValidationLayerSupport] Validation layer not found: {}", layerName);
                 return false;
             }
         }
@@ -1705,8 +1705,6 @@ namespace Bcg {
         // extensions.push_back(VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
         // extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME);
 
-
-        Log::Info("Required Instance Extensions:");
         for (const auto &ext: extensions) {
             Log::Info("[Vulkan::getRequiredExtensions]\t {}", ext);
         }
@@ -1721,7 +1719,7 @@ namespace Bcg {
         void *pUserData) {
         // Filter severity
         if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-            Log::Error("Validation Layer: ");
+            Log::Error("[VulkanContext::debugCallback] Validation Layer: ");
             if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) { Log::Error("[VERBOSE] "); }
             if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) { Log::Error("[INFO] "); }
             if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) { Log::Error("[WARNING] "); }

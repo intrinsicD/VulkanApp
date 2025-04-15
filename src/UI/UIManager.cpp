@@ -15,6 +15,7 @@
 #include "Application.h"
 #include "WindowManager.h"
 #include "TransformComponent.h"
+#include "UICameraComponent.h"
 
 namespace Bcg {
     UIManager::~UIManager() {
@@ -22,29 +23,29 @@ namespace Bcg {
 
         if (ImGui::GetCurrentContext() != nullptr) {
             ImGui::DestroyContext();
-            std::cout << "  ImGui Context destroyed." << std::endl;
+            Log::Info("[UIManager] ImGui Context  destroyed");
         } else {
-            std::cout << "  ImGui Context was already null." << std::endl;
+            Log::Warn("[UIManager] ImGui Context was already null.");
         }
     }
 
     void UIManager::initialize(ApplicationContext *context) {
-        Log::Info("WindowManager Initialized.");
+        Log::Info("UIManager Initialized.");
         this->context = context;
         initImGui();
     }
 
     void UIManager::shutdown() {
-        Log::Info("WindowManager Shutdown.");
-        Log::Info("[WindowManager::shuttdown] ImGui GLFW backend Shutdown.");
+        Log::Info("UIManager Shutdown.");
+        Log::Info("[UIManager::shuttdown] ImGui GLFW backend Shutdown.");
         ImGui_ImplGlfw_Shutdown();
         // 4. Destroy ImGui Context AFTER Vulkan backend is shut down
-        Log::Info("[WindowManager::shuttdown] ImGui Context destroyed.");
+        Log::Info("[UIManager::shuttdown] ImGui Context destroyed.");
         ImGui::DestroyContext();
     }
 
     void UIManager::initImGui() {
-        Log::Info("[WindowManager::initImGui] ImGui Context Initialize...");
+        Log::Info("[UIManager::initImGui] ImGui Context Initialize...");
         // --- ImGui Setup Context --- <<< ADD
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -67,7 +68,7 @@ namespace Bcg {
 
     void UIManager::initGLFWBackend() {
         // --- ImGui Setup Platform/Renderer Bindings --- <<< ADD
-        Log::Info("[WindowManager::initGLFWBackend] ImGui GLFW backend Initialize...");
+        Log::Info("[UIManager::initGLFWBackend] ImGui GLFW backend Initialize...");
         ImGui_ImplGlfw_InitForVulkan(context->windowManager->getGLFWHandle(), true); // true = install callbacks
         // ImGui Vulkan backend is initialized inside m_vkContext.init() now
         // --- End ImGui Bindings ---
@@ -110,68 +111,7 @@ namespace Bcg {
             // -- Projection --
             auto *camera = context->cameraSystem->getCurrentCamera();
 
-            ImGui::SeparatorText("Projection");
-            float fovDeg = camera->fovYDegrees;
-            float aspect = camera->aspectRatio;
-            float nearP = camera->nearPlane;
-            float farP = camera->farPlane;
-
-            bool projChanged = false;
-            projChanged |= ImGui::SliderFloat("FOV (Degrees)", &fovDeg, 10.0f, 120.0f);
-            // Display Aspect Ratio (usually not editable directly here)
-            ImGui::Text("Aspect Ratio: %.2f", aspect);
-            // Allow editing near/far planes
-            projChanged |= ImGui::DragFloat("Near Plane", &nearP, 0.01f, 0.001f, farP - 0.01f, "%.3f"); // Add limits
-            projChanged |= ImGui::DragFloat("Far Plane", &farP, 0.1f, nearP + 0.01f, 10000.0f, "%.1f"); // Add limits
-
-            if (projChanged) {
-                // Ensure near < far after edits
-                nearP = std::min(nearP, farP - 0.001f);
-                farP = std::max(farP, nearP + 0.001f);
-                camera->fovYDegrees = fovDeg;
-                camera->aspectRatio = aspect;
-                camera->nearPlane = nearP;
-                camera->farPlane = farP;
-                camera->dirtyProjection = true;
-            }
-            // Display Projection Matrix (Read-only, potentially long)
-            // const glm::mat4 projMat = cameraSystem->getProjectionMatrix(); // Force update if needed
-            // ImGui::Text("Projection Matrix:");
-            // ImGui::Text("%s", glm::to_string(projMat).c_str()); // Can be verbose
-
-            // -- View (Orbit Mode Focus) --
-            ImGui::SeparatorText("View (Orbit)");
-            float distance = camera->distance;
-            Vector3f position = camera->position; // Get a copy
-            Vector3f targetPos = camera->target; // Get a copy
-
-            bool viewChanged = false;
-            viewChanged |= ImGui::DragFloat("Distance", &distance, 0.1f, 0.1f, 1000.0f, "%.2f");
-            viewChanged |= ImGui::InputFloat3("Target Position", &targetPos[0], "%.2f"); // Edit target position
-
-            if (viewChanged) {
-                if (distance != camera->distance) {
-                    context->cameraSystem->setDistance(*camera, distance);
-                }
-                camera->target = targetPos;
-                camera->dirtyView = true;
-            }
-
-            // Display Calculated Camera Position (Read-only)
-            Vector3f camPos = camera->position; // Force update if needed
-            ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camPos.x(), camPos.y(), camPos.z());
-
-            // Display View Matrix (Read-only, potentially long)
-            // const glm::mat4 viewMat = cameraSystem->getViewMatrix(); // Force update if needed
-            // ImGui::Text("View Matrix:");
-            // ImGui::Text("%s", glm::to_string(viewMat).c_str()); // Can be verbose
-
-            // -- Movement --
-            ImGui::SeparatorText("Movement");
-            float moveSpeed = camera->movementSpeed;
-            if (ImGui::InputFloat("WASD Move Speed", &moveSpeed, 0.1f, 1.0f, "%.1f")) {
-                camera->movementSpeed = moveSpeed;
-            }
+            UICameraComponent(*camera);
         } // End CollapsingHeader
 
 

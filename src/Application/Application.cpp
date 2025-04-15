@@ -201,7 +201,8 @@ namespace Bcg {
             auto camera = m_applicationContext.cameraSystem->getCurrentCamera();
             camera->aspectRatio = (float) event.width / (float) event.height;
             camera->dirtyProjection = true;
-            std::cout << "Window resized: " << event.width << "x" << event.height << std::endl;
+            Log::Trace("Window resized: {}x{}, aspect ratio updated to: {}", event.width, event.height,
+                       camera->aspectRatio);
         }
     }
 

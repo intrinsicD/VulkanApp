@@ -17,20 +17,20 @@ namespace Bcg {
 
         void shutdown() override;
 
-        void update(TransformComponent &transform);
+        static void update(TransformComponent &transform);
 
-        void setFromMatrix(TransformComponent &transform, const Matrix4f &model_matrix);
+        static void setFromMatrix(TransformComponent &transform, const Matrix4f &model_matrix);
 
-        void preApply(TransformComponent &transform, const Matrix4f &m);
+        static void preApply(TransformComponent &transform, const Matrix4f &m);
 
-        void postApply(TransformComponent &transform, const Matrix4f &m);
+        static void postApply(TransformComponent &transform, const Matrix4f &m);
 
-        void translate(TransformComponent &transform, const Translation &translation);
+        static void translate(TransformComponent &transform, const Translation &translation);
 
-        void rotate(TransformComponent &transform, const Rotation &rotation,
+        static void rotate(TransformComponent &transform, const Rotation &rotation,
                     const Vector3f &pivot_point = Vector3f::Zero());
 
-        void scale(TransformComponent &transform, const Sscaling &scaling);
+        static void scale(TransformComponent &transform, const Sscaling &scaling);
     };
 }
 

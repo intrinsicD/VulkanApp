@@ -5,10 +5,13 @@
 #ifndef CAMERASYSTEM_H
 #define CAMERASYSTEM_H
 
+#include "TransformComponent.h"
+
 #include "Components.h"
 
 #include "System.h"
 #include "CameraComponent.h"
+#include "Mouse.h"
 
 namespace Bcg {
     class CameraSystem : public System {
@@ -33,12 +36,20 @@ namespace Bcg {
 
         void setCurrentCamera(CameraParametersComponent *camera);
 
-        void update(CameraParametersComponent &camera) const;
+        static void update(CameraParametersComponent &camera);
 
-        void setDistance(CameraParametersComponent &camera, float distance);
+        static void setDistanceToTarget(CameraParametersComponent &camera, float distance);
 
+        static void setFromMatrix(CameraParametersComponent &camera, const Matrix4f &model_matrix);
+
+        static void setFromTransform(CameraParametersComponent &camera, const TransformComponent &model_matrix);
+
+        static void zoom(CameraParametersComponent &camera, float delta);
+
+        static void arcball(CameraParametersComponent &camera, const Mouse &mouse);
     private:
         CameraParametersComponent *m_camera;
+        Vector2f m_arcball_last = Vector2f(0, 0);
     };
 }
 

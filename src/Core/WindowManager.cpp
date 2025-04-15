@@ -33,7 +33,7 @@ namespace Bcg {
         // Consider putting glfwTerminate() in the Application destructor or run() cleanup.
         // For simplicity here, we might put it here, assuming only one window.
         glfwTerminate();
-        std::cout << "GLFW terminated." << std::endl;
+        Log::Info("[WindowManager] GLFW terminated.");
     }
 
     void WindowManager::initialize(ApplicationContext *context)  {

@@ -19,6 +19,7 @@
 #include "VulkanContext.h" // For VulkanMeshComponent
 #include "Application.h" // Potentially needed to get CameraSystem, or use events
 #include "TransformComponent.h" // Potentially needed to get CameraSystem, or use events
+#include "AABBSystem.h" // Potentially needed to get CameraSystem, or use events
 
 namespace Bcg {
     void SceneManager::initialize(ApplicationContext *context) {
@@ -60,9 +61,8 @@ namespace Bcg {
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-        Vector3f modelMinLocal = Vector3f::Constant(std::numeric_limits<float>::max());
-        Vector3f modelMaxLocal = Vector3f::Constant(std::numeric_limits<float>::lowest());
         bool hasVertices = false;
+        AABBComponent aabb_component;
 
         for (const auto &shape: shapes) {
             for (const auto &index: shape.mesh.indices) {
@@ -75,8 +75,7 @@ namespace Bcg {
                     attrib.vertices[vertIdxBase + 1],
                     attrib.vertices[vertIdxBase + 2]
                 };
-                modelMinLocal = modelMinLocal.cwiseMin(vertex.pos);
-                modelMaxLocal = modelMaxLocal.cwiseMax(vertex.pos);
+                AABBSystem::grow(aabb_component, vertex.pos);
                 hasVertices = true;
 
                 // Normals
@@ -138,6 +137,7 @@ namespace Bcg {
         auto entity = context->registry->create();
 
         // Add mesh component and upload data via Renderer
+        context->registry->emplace<AABBComponent>(entity, aabb_component);
         context->registry->emplace<VulkanMeshComponent>(entity);
         context->rendererSystem->uploadMesh(entity, vertices, indices);
 

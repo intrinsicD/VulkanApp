@@ -6,6 +6,7 @@
 #define INPUTMANAGER_H
 
 #include "Manager.h"
+#include "Mouse.h"
 #include "MatVec.h"
 
 namespace Bcg {
@@ -26,9 +27,7 @@ namespace Bcg {
 
         void processInput(float detlaTime);
 
-        InputState &getInputState();
-
-        const InputState &getInputState() const;
+        const Mouse &getMouse() const;
 
         void handleKey(int key, int scancode, int action, int mods);
 
@@ -41,7 +40,7 @@ namespace Bcg {
         void handleChar(unsigned int c);
 
     private:
-        InputState m_inputState;
+        Mouse m_mouse;
     };
 }
 

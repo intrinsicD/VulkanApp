@@ -22,10 +22,14 @@ namespace Bcg{
         float farPlane = 100.0f;
 
         float movementSpeed = 1.0f;
+        float zoomSensitivity = 0.5f;
+        float rotSensitivity = 0.005f;
         float distance = 1.0f;
 
         bool dirtyProjection;
         bool dirtyView;
+
+        Vector2f lastMousePosition = Vector2f::Zero();;
     };
 
     inline void Perspective(Matrix4f &proj, float fovYDegrees, float aspectRatio, float nearPlane, float farPlane) {

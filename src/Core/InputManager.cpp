@@ -80,12 +80,8 @@ namespace Bcg {
         }
     }
 
-    InputState &InputManager::getInputState() {
-        return m_inputState;
-    }
-
-    const InputState &InputManager::getInputState() const {
-        return m_inputState;
+    const Mouse &InputManager::getMouse() const {
+        return m_mouse;
     }
 
     void InputManager::handleKey(int key, int scancode, int action, int mods) {
@@ -107,80 +103,46 @@ namespace Bcg {
     }
 
     void InputManager::handleMouseButton(int button, int action, int mods) {
-        if (button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (action == GLFW_PRESS) {
-                m_inputState.m_mouseDragging = true;
-                // Need to get cursor pos differently now
-                double x, y;
-                glfwGetCursorPos(context->windowManager->getGLFWHandle(), &x, &y);
-                m_inputState.m_lastMousePos = {x, y};
-            } else if (action == GLFW_RELEASE) {
-                m_inputState.m_mouseDragging = false;
-            }
+        m_mouse.is_left_button_pressed = button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS;
+        m_mouse.is_middle_button_pressed = button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS;
+        m_mouse.is_right_button_pressed = button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS;
+        if (m_mouse.is_left_button_pressed || m_mouse.is_middle_button_pressed || m_mouse.is_right_button_pressed) {
+            m_mouse.is_dragging = true;
+        } else {
+            m_mouse.is_dragging = false;
+        }
+
+        if (m_mouse.is_left_button_pressed) {
+            m_mouse.last_left_click = m_mouse.current;
+        }
+
+        if (m_mouse.is_middle_button_pressed) {
+            m_mouse.last_middle_click = m_mouse.current;
+        }
+
+        if (m_mouse.is_right_button_pressed) {
+            m_mouse.last_right_click = m_mouse.current;
         }
     }
 
     void InputManager::handleCursorPos(double xpos, double ypos) {
-        if (m_inputState.m_mouseDragging) {
-            Vector2f currentMousePos = Vector2f(xpos, ypos);
-            Vector2f delta = currentMousePos - m_inputState.m_lastMousePos;
-            m_inputState.m_lastMousePos = currentMousePos;
+        m_mouse.is_moving = true;
+        m_mouse.is_idle = false;
+        m_mouse.current.cursor_position = Vector2f(xpos, ypos);
 
-            float rotSensitivity = 0.005f;
+        if (m_mouse.is_dragging) {
             auto camera = context->cameraSystem->getCurrentCamera();
-            if (!camera) return; // Safety check
-
-            // Calculate rotation angles (in radians)
-            float angle_x = delta.x() * rotSensitivity;
-            float angle_y = delta.y() * rotSensitivity;
-
-            // Compute vector from target to current camera position
-            Vector3f v = camera->position - camera->target;
-            Vector3f worldUp = Vector3f(0.0f, 1.0f, 0.0f);
-
-            // --- Horizontal Rotation ---
-            // Rotate around the world up (Y) axis.
-            Eigen::AngleAxisf horiz_rot(angle_x, worldUp);
-            v = horiz_rot * v;
-            // Also rotate the current up vector
-            Vector3f new_up = horiz_rot * camera->up;
-
-            // --- Compute the Right Axis for Vertical Rotation ---
-            // First, compute forward direction from camera toward the target.
-            // Since v = camera->position - camera->target, the forward vector is -v (normalized).
-            Vector3f forward = (-v).normalized();
-            // Compute right vector using the conventional lookAt ordering:
-            // right = normalize(cross(forward, new_up));
-            Vector3f right = forward.cross(new_up).normalized();
-
-            // --- Vertical Rotation ---
-            // Rotate v and new_up about the right axis.
-            Eigen::AngleAxisf vert_rot(angle_y, right);
-            v = vert_rot * v;
-            new_up = vert_rot * new_up;
-
-            // Update camera parameters
-            camera->position = camera->target + v;
-            camera->up = new_up.normalized();
-
-            // Mark the view matrix as needing update (if applicable).
-            camera->dirtyView = true;
+            CameraSystem::arcball(*camera, m_mouse);
         }
     }
 
     void InputManager::handleScroll(double xoffset, double yoffset) {
-        float zoomSensitivity = 0.5f;
+        m_mouse.is_scrolling = true;
+        m_mouse.is_idle = false;
+        m_mouse.scrollxy = Vector2f(xoffset, yoffset);
+
         auto camera = context->cameraSystem->getCurrentCamera();
-        if (!camera) return; // Safety check
-        // Adjust the camera distance based on scroll input
-        auto backward = camera->position - camera->target;
-        auto len = backward.norm();
-        if (len < 0.1f) {
-            // Prevent zooming in too close
-            return;
-        }
-        camera->position = camera->target + (len - static_cast<float>(yoffset)) * zoomSensitivity * (backward / len);
-        camera->dirtyView = true;
+        if (camera) CameraSystem::zoom(*camera, yoffset);
     }
 
     void InputManager::handleChar(unsigned int c) {

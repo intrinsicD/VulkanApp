@@ -333,6 +333,7 @@ namespace Bcg{
         auto camera = context->cameraSystem->getCurrentCamera();
         if (!camera) return;
 
+        CameraSystem::update(*camera);
         const auto &view = camera->viewMatrix; // Assuming Application has getCamera()
 
         GlobalUBO ubo{};
