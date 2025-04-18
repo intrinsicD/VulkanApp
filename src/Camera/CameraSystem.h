@@ -36,17 +36,7 @@ namespace Bcg {
 
         void setCurrentCamera(CameraParametersComponent *camera);
 
-        static void update(CameraParametersComponent &camera);
 
-        static void setDistanceToTarget(CameraParametersComponent &camera, float distance);
-
-        static void setFromMatrix(CameraParametersComponent &camera, const Matrix4f &model_matrix);
-
-        static void setFromTransform(CameraParametersComponent &camera, const TransformComponent &model_matrix);
-
-        static void zoom(CameraParametersComponent &camera, float delta);
-
-        static void arcball(CameraParametersComponent &camera, const Mouse &mouse);
     private:
         CameraParametersComponent *m_camera;
         Vector2f m_arcball_last = Vector2f(0, 0);

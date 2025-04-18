@@ -20,6 +20,7 @@ namespace Bcg{
     class TransformSystem;
     class CameraSystem;
     class RendererSystem;
+    class AABBSystem;
 
     struct ApplicationContext{
         //Managers
@@ -32,6 +33,7 @@ namespace Bcg{
         std::unique_ptr<RendererSystem> rendererSystem;
         std::unique_ptr<CameraSystem> cameraSystem;
         std::unique_ptr<TransformSystem> transformSystem;
+        std::unique_ptr<AABBSystem> aabbSystem;
 
         entt::registry* registry;
         entt::dispatcher* dispatcher;

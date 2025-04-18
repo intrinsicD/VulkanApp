@@ -9,7 +9,7 @@
 
 namespace Bcg{
     struct CameraParametersComponent{
-        Matrix4f viewMatrix = Matrix4f::Identity();
+        Eigen::Affine3f viewMatrix = Eigen::Affine3f::Identity();
         Matrix4f projectionMatrix = Matrix4f::Identity();
 
         Vector3f position = Vector3f(0.0f, 0.0f, 5.0f);
@@ -42,15 +42,15 @@ namespace Bcg{
         proj(3, 2) = -1.0f;
     }
 
-    inline void LookAt(Matrix4f &view, const Vector3f &position, const Vector3f &target, const Vector3f &up) {
+    inline void LookAt(Eigen::Affine3f &view, const Vector3f &position, const Vector3f &target, const Vector3f &up) {
         Eigen::Vector3f forward = (target - position).normalized();
         Eigen::Vector3f right = forward.cross(up).normalized();
         Eigen::Vector3f up_ = right.cross(forward);
 
-        view = Eigen::Matrix4f::Identity();
-        view.block<1, 3>(0, 0) = right.transpose();
-        view.block<1, 3>(1, 0) = up.transpose();
-        view.block<1, 3>(2, 0) = -forward.transpose();
+        view = Eigen::Affine3f::Identity();
+        view.linear().row(0) = right.transpose();
+        view.linear().row(1) = up_.transpose();
+        view.linear().row(2) = -forward.transpose();
         view(0, 3) = -right.dot(position);
         view(1, 3) = -up.dot(position);
         view(2, 3) = forward.dot(position);

@@ -7,6 +7,9 @@
 #include "imgui.h"
 
 #include "RendererSystem.h"
+
+#include <CameraUtils.h>
+
 #include "Logger.h"
 #include "CameraSystem.h"
 #include "WindowManager.h"
@@ -333,15 +336,14 @@ namespace Bcg{
         auto camera = context->cameraSystem->getCurrentCamera();
         if (!camera) return;
 
-        CameraSystem::update(*camera);
+        CameraUtils::update(*camera);
         const auto &view = camera->viewMatrix; // Assuming Application has getCamera()
 
         GlobalUBO ubo{};
-        ubo.view = view;
+        ubo.view = view.matrix();
         ubo.proj = camera->projectionMatrix;
 
         // Calculate camera position from view matrix (inverse)
-        Matrix4f invView = view.inverse();
         ubo.cameraPos.head<3>() = camera->position;
         ubo.cameraPos[3] = 1.0f; // Homogeneous coordinate
 

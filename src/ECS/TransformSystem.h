@@ -9,6 +9,10 @@
 #include "TransformComponent.h"
 
 namespace Bcg {
+    struct TransformNeedsUpdate {
+        // This struct is used to mark entities that need transform updates
+    };
+
     class TransformSystem : public System {
     public:
         ~TransformSystem() override = default;
@@ -17,20 +21,7 @@ namespace Bcg {
 
         void shutdown() override;
 
-        static void update(TransformComponent &transform);
-
-        static void setFromMatrix(TransformComponent &transform, const Matrix4f &model_matrix);
-
-        static void preApply(TransformComponent &transform, const Matrix4f &m);
-
-        static void postApply(TransformComponent &transform, const Matrix4f &m);
-
-        static void translate(TransformComponent &transform, const Translation &translation);
-
-        static void rotate(TransformComponent &transform, const Rotation &rotation,
-                    const Vector3f &pivot_point = Vector3f::Zero());
-
-        static void scale(TransformComponent &transform, const Sscaling &scaling);
+        void update();
     };
 }
 

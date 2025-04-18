@@ -6,6 +6,7 @@
 
 #include "InputManager.h"
 #include "CameraSystem.h"
+#include "CameraUtils.h"
 #include "Application.h"
 #include "WindowManager.h"
 
@@ -132,7 +133,7 @@ namespace Bcg {
 
         if (m_mouse.is_dragging) {
             auto camera = context->cameraSystem->getCurrentCamera();
-            CameraSystem::arcball(*camera, m_mouse);
+            CameraUtils::arcball(*camera, m_mouse);
         }
     }
 
@@ -142,7 +143,7 @@ namespace Bcg {
         m_mouse.scrollxy = Vector2f(xoffset, yoffset);
 
         auto camera = context->cameraSystem->getCurrentCamera();
-        if (camera) CameraSystem::zoom(*camera, yoffset);
+        if (camera) CameraUtils::zoom(*camera, yoffset);
     }
 
     void InputManager::handleChar(unsigned int c) {

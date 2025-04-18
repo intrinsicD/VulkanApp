@@ -2,17 +2,17 @@
 // Created by alex on 4/15/25.
 //
 
-#include <CameraSystem.h>
 #include <imgui.h>
 #include <sstream>
 
 #include "UICameraComponent.h"
+#include "CameraUtils.h"
 
 namespace Bcg {
     inline void UICameraMatrices(const CameraParametersComponent &camera) {
         ImGui::Text("View Matrix:");
         std::stringstream ss_view;
-        ss_view << camera.viewMatrix;
+        ss_view << camera.viewMatrix.matrix();
         ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + 400.0f); // Optional: Wrap long matrix text
         ImGui::TextUnformatted(ss_view.str().c_str()); // Use TextUnformatted for potentially long strings
         ImGui::PopTextWrapPos();
@@ -70,7 +70,7 @@ namespace Bcg {
         ImGui::SliderFloat("Movement Speed: %.2f", &camera.movementSpeed, 0.0f, 10.0f, "%.2f");
         ImGui::SliderFloat("Zoom Sensitivity: %.2f", &camera.zoomSensitivity, 0.0f, 10.0f, "%.2f");
         if (ImGui::SliderFloat("Distance to Target: %.2f", &camera.distance, 0.1f, 1000.0f, "%.2f")) {
-            CameraSystem::setDistanceToTarget(camera, camera.distance);
+            CameraUtils::setDistanceToTarget(camera, camera.distance);
         }
         if (ImGui::CollapsingHeader("Matrices")) {
             UICameraMatrices(camera);

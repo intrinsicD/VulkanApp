@@ -13,7 +13,7 @@ namespace Bcg {
         Rotation rotation = Rotation::Identity();
         Sscaling scale = Vector3f::Zero();
 
-        Matrix4f cachedModelMatrix = Matrix4f::Identity();
+        Eigen::Affine3f cachedModelMatrix = Eigen::Affine3f::Identity();
         bool dirty = true;
     };
 }

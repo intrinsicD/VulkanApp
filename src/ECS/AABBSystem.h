@@ -9,6 +9,10 @@
 #include "AABBComponent.h"
 
 namespace Bcg {
+    struct NeedsAABBUpdate {
+        // This struct is used to mark entities that need AABB updates
+    };
+
     class AABBSystem : public System {
     public:
         ~AABBSystem() override = default;
@@ -16,6 +20,8 @@ namespace Bcg {
         void initialize(ApplicationContext *context) override;
 
         void shutdown() override;
+
+        void update();
 
         static void update(AABBComponent &aabb);
 

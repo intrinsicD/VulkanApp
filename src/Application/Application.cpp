@@ -13,6 +13,7 @@
 #include "RendererSystem.h"
 #include "CameraSystem.h"
 #include "TransformSystem.h"
+#include "AABBSystem.h"
 
 #include <iostream> // Needed for Vertex Attribute Descriptions
 
@@ -40,6 +41,7 @@ namespace Bcg {
         context->rendererSystem = std::make_unique<RendererSystem>();
         context->inputManager = std::make_unique<InputManager>();
         context->transformSystem = std::make_unique<TransformSystem>();
+        context->aabbSystem = std::make_unique<AABBSystem>();
     }
 
     Application::~Application() {
@@ -57,6 +59,7 @@ namespace Bcg {
         context->uiManager->initGLFWBackend(); // Initialize ImGui GLFW backend
         context->inputManager->initialize(context);
         context->transformSystem->initialize(context);
+        context->aabbSystem->initialize(context);
 
         initECS();
 
@@ -114,6 +117,8 @@ namespace Bcg {
             m_applicationContext.inputManager->processInput(deltaTime); // Handle continuous input (e.g., key holds)
 
             // --- Update ---
+            m_applicationContext.aabbSystem->update();
+            m_applicationContext.transformSystem->update();
 
             // Update entity transforms (simple example)
             auto view = m_registry.view<TransformComponent>();

@@ -41,11 +41,13 @@ add_subdirectory(src)
 target_sources(${PROJECT_NAME} PRIVATE
         src/Application/Application.cpp
         src/Camera/CameraSystem.cpp
+        src/Camera/CameraUtils.cpp
         src/Core/Logger.cpp
         src/Core/InputManager.cpp
         src/Core/WindowManager.cpp
         src/ECS/TransformSystem.cpp
         src/ECS/AABBSystem.cpp
+        src/ECS/TransformUtils.cpp
         src/Rendering/RendererSystem.cpp
         src/Rendering/ShaderData.cpp
         src/Rendering/VulkanUtils.cpp
