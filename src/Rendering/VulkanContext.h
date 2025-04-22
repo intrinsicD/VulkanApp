@@ -18,33 +18,7 @@
 struct GLFWwindow;
 
 namespace Bcg{
-#ifdef NDEBUG
-    #define VK_CHECK(call) (call)
-#else
-    #define VK_CHECK(call)                                                    \
-        do {                                                                  \
-            VkResult result_ = (call);                                        \
-            if (result_ != VK_SUCCESS) {                                      \
-                fprintf(stderr, "Vulkan call failed: %s (%d) in %s:%d\n",     \
-                Bcg::vkResultToString(result_), result_, __FILE__, __LINE__); \
-                abort();                                                      \
-            }                                                                 \
-        } while (0)
-#endif
 
-#ifdef NDEBUG
-    #define CUDA_CHECK(call) (call)
-#else
-    #define CUDA_CHECK(call)                                                    \
-        do {                                                                    \
-            cudaError_t err = (call);                                           \
-            if (err != cudaSuccess) {                                           \
-                fprintf(stderr, "CUDA error: %s (%d) in %s:%d\n",               \
-                cudaGetErrorString(err), err, __FILE__, __LINE__);      \
-                abort();                                                        \
-            }                                                                   \
-        } while (0)
-#endif
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -245,6 +219,19 @@ namespace Bcg{
                                            const VkAllocationCallbacks *pAllocator);
 
         bool isDeviceSuitable(VkPhysicalDevice device);
+    };
+
+    class Instance{
+    public:
+        Instance(GLFWwindow *window);
+
+        ~Instance();
+
+#ifdef NDEBUG
+        const bool enableValidationLayers = false;
+#else
+        const bool enableValidationLayers = true;
+#endif
     };
 }
 #endif //VULKANCONTEXT_H

@@ -10,11 +10,6 @@
 #include "MatVec.h"
 
 namespace Bcg {
-    struct InputState {
-        bool m_mouseDragging = false;
-        Vector2f m_lastMousePos = Vector2f::Zero();
-    };
-
     class InputManager : public Manager{
     public:
         InputManager();
@@ -27,7 +22,7 @@ namespace Bcg {
 
         void processInput(float detlaTime);
 
-        const Mouse &getMouse() const;
+        [[nodiscard]] const Mouse &getMouse() const;
 
         void handleKey(int key, int scancode, int action, int mods);
 

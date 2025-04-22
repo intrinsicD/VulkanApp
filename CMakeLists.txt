@@ -52,6 +52,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         src/Rendering/ShaderData.cpp
         src/Rendering/VulkanUtils.cpp
         src/Rendering/VulkanContext.cpp
+        src/Rendering/VulkanWrappers.cpp
         src/Scene/SceneManager.cpp
         src/UI/UIManager.cpp
 )

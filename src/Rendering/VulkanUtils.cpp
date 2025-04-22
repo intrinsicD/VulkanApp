@@ -5,7 +5,7 @@
 #include "VulkanUtils.h"
 
 namespace Bcg{
-    const char *vkResultToString(VkResult result) {
+    const char *VkResultToString(VkResult result) {
         // Basic implementation, add more VkResult codes as needed
         switch (result) {
             case VK_SUCCESS: return "VK_SUCCESS";
