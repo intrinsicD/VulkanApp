@@ -46,10 +46,8 @@ target_sources(${PROJECT_NAME} PRIVATE
         src/Core/InputManager.cpp
         src/Core/WindowManager.cpp
         src/ECS/TransformSystem.cpp
-        src/ECS/AABBSystem.cpp
         src/ECS/TransformUtils.cpp
         src/Rendering/RendererSystem.cpp
-        src/Rendering/ShaderData.cpp
         src/Rendering/VulkanUtils.cpp
         src/Rendering/VulkanContext.cpp
         src/Rendering/VulkanWrappers.cpp

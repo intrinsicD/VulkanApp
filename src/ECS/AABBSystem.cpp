@@ -6,7 +6,7 @@
 
 
 #include "AABBUtils.h"
-#include "GeometryPositionsComponent.h"
+#include "GeometryAccessComponents.h"
 #include "TransformComponent.h"
 
 namespace Bcg {
@@ -19,11 +19,11 @@ namespace Bcg {
 
     void AABBSystem::update() {
         auto &registry = context->registry;
-        auto view = registry->view<GeometryPositionsComponent, AABBComponent, NeedsAABBUpdate, TransformComponent>();
+        auto view = registry->view<GeometryVertexPositionsComponent, AABBComponent, NeedsAABBUpdate, TransformComponent>();
 
         for (auto entity: view) {
             auto &aabb = view.get<AABBComponent>(entity);
-            auto &geometry = view.get<GeometryPositionsComponent>(entity);
+            auto &geometry = view.get<GeometryVertexPositionsComponent>(entity);
             auto &transform = view.get<TransformComponent>(entity);
 
             if (geometry.positions && !geometry.positions->empty()) {
